@@ -21,6 +21,13 @@ class Book extends Model
         return $query->where('title', 'LIKE', '%' . $title . '%');
     }
 
+    public function scopeWithAvgRating(Builder $query): Builder|QueryBuilder
+    {
+        return $query->withAvg([
+            'reviews' => fn(Builder $q) =>  $this->dateRangeFilter($q, $from, $to)
+        ], 'rating');
+    }
+
     public function scopePopular(Builder $query, $from = null, $to = null): Builder|QueryBuilder
     {
         return $query->withCount([
@@ -56,14 +63,14 @@ class Book extends Model
         }   
     }
 
-    public function scopePopularLatestMonth(Building $query): Builder|QueryBuilder
+    public function scopePopularLastMonth(Builder $query): Builder|QueryBuilder
     {
         return $query->popular(now()->subMonth(), now())
             ->highestRated(now()->subMonth(), now())
             ->minReviews(2);
     }
 
-    public function scopePopularLatest6Month(Building $query): Builder|QueryBuilder
+    public function scopePopularLast6Months(Builder $query): Builder|QueryBuilder
     {
         return $query->popular(now()->subMonth(6), now())
             ->highestRated(now()->subMonth(6), now())
@@ -75,5 +82,12 @@ class Book extends Model
         return $query->highestRated(now()->subMonth(), now())
             ->popular(now()->subMonth(), now())
             ->minReviews(2);
+    }
+
+    public function scopeHighestRatedLast6Months(Builder $query): Builder|QueryBuilder
+    {
+        return $query->highestRated(now()->subMonth(6), now())
+            ->popular(now()->subMonth(6), now())
+            ->minReviews(5);
     }
 }
